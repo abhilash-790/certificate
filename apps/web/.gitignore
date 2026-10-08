@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Next.js Build Outputs
+.next/
+out/
+build/
+dist/
+
+# Local Environment Variables
+.env*.local
+.env
+!.env.local.example
+
+# Vercel
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db

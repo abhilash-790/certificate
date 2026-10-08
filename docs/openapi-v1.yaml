@@ -1,0 +1,432 @@
+openapi: 3.0.3
+info:
+  title: CertiGuard API
+  description: AI-Powered Certificate Verification & Fraud Risk Detection API
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Production & Local Gateway API v1
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: User already exists / validation error
+
+  /auth/login:
+    post:
+      summary: Login user & obtain JWT tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '401':
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      summary: Get current authenticated user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /certificates:
+    post:
+      summary: Upload certificate file for analysis
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Certificate file (PDF, PNG, JPEG, max 10MB)
+      responses:
+        '202':
+          description: File uploaded and verification task queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateUploadResponse'
+
+  /certificates/{id}:
+    get:
+      summary: Get status, extracted fields, check breakdown, verdict, and risk score
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationDetailResponse'
+
+  /certificates/{id}/type:
+    patch:
+      summary: Confirm or override detected certificate type
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - confirmed_type
+              properties:
+                confirmed_type:
+                  type: string
+                  enum: [degree, marksheet, training]
+      responses:
+        '200':
+          description: Type confirmed and downstream pipeline re-enqueued
+
+  /certificates/{id}/fields:
+    patch:
+      summary: Edit extracted field values & trigger re-verification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fields
+              properties:
+                fields:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FieldUpdateItem'
+      responses:
+        '200':
+          description: Fields updated and checks re-evaluated
+
+  /certificates/{id}/report:
+    get:
+      summary: Get verification report document (JSON/HTML)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Verification report object
+
+  /issuer/certificates:
+    post:
+      summary: Register and issue a new certificate with canonical hash & signed QR token
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueCertificateRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssuedCertificateResponse'
+
+  /issuer/certificates/{id}/revoke:
+    post:
+      summary: Revoke an issued certificate with reason
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Certificate revoked
+
+  /public/verify/{token}:
+    get:
+      summary: Public verification page lookup via QR verification token (Rate limited)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicVerificationResponse'
+
+  /review/queue:
+    get:
+      summary: Fetch pending reviewer queue items (HIGH risk prioritized)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewQueueItem'
+
+  /review/{id}/decision:
+    post:
+      summary: Submit reviewer decision with mandatory notes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewDecisionRequest'
+      responses:
+        '200':
+          description: Review decision recorded
+
+  /health:
+    get:
+      summary: System health check (DB, Redis, Storage connectivity)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  database:
+                    type: boolean
+                  redis:
+                    type: boolean
+                  storage:
+                    type: boolean
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserRegisterRequest:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        role: { type: string, enum: [VERIFIER, INSTITUTION, REVIEWER, ADMIN] }
+        institution_id: { type: string, format: uuid }
+
+    UserLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    UserResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string }
+
+    AuthTokenResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        token_type: { type: string, example: bearer }
+
+    CertificateUploadResponse:
+      type: object
+      properties:
+        verification_id: { type: string, format: uuid }
+        file_id: { type: string, format: uuid }
+        detected_type: { type: string }
+        type_confidence: { type: number }
+        status: { type: string }
+
+    FieldUpdateItem:
+      type: object
+      required: [field_name, value]
+      properties:
+        field_name: { type: string }
+        value: { type: string }
+
+    VerificationDetailResponse:
+      type: object
+      properties:
+        verification_id: { type: string, format: uuid }
+        status: { type: string }
+        detected_type: { type: string }
+        verdict: { type: string, enum: [VERIFIED, REVOKED, NOT_VERIFIED, NEEDS_REVIEW, UNVERIFIABLE_ISSUER] }
+        risk_score: { type: number }
+        risk_level: { type: string, enum: [LOW, MEDIUM, HIGH] }
+        coverage_pct: { type: number }
+        extracted_fields:
+          type: array
+          items:
+            type: object
+            properties:
+              field_name: { type: string }
+              ocr_value: { type: string }
+              value: { type: string }
+              confidence: { type: number }
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              check_type: { type: string }
+              tier: { type: string }
+              result: { type: string }
+              score: { type: number }
+              details: { type: object }
+        explanation: { type: string }
+        reasons: { type: array, items: { type: string } }
+
+    IssueCertificateRequest:
+      type: object
+      required: [certificate_type_code, certificate_number, holder_name, course, data_json, issue_date]
+      properties:
+        certificate_type_code: { type: string, enum: [degree, marksheet, training] }
+        certificate_number: { type: string }
+        holder_name: { type: string }
+        course: { type: string }
+        data_json: { type: object }
+        issue_date: { type: string, format: date }
+
+    IssuedCertificateResponse:
+      type: object
+      properties:
+        certificate_id: { type: string, format: uuid }
+        certificate_number: { type: string }
+        canonical_hash: { type: string }
+        signature: { type: string }
+        verification_token: { type: string }
+        qr_code_base64: { type: string }
+
+    PublicVerificationResponse:
+      type: object
+      properties:
+        status: { type: string }
+        verdict: { type: string }
+        institution_name: { type: string }
+        certificate_number: { type: string }
+        holder_name_masked: { type: string }
+        issue_date: { type: string }
+        verified_at: { type: string }
+
+    ReviewQueueItem:
+      type: object
+      properties:
+        verification_id: { type: string, format: uuid }
+        certificate_type: { type: string }
+        holder_name: { type: string }
+        verdict: { type: string }
+        risk_score: { type: number }
+        risk_level: { type: string }
+        submitted_at: { type: string }
+
+    ReviewDecisionRequest:
+      type: object
+      required: [decision, notes]
+      properties:
+        decision: { type: string, enum: [APPROVE, REJECT, NEEDS_INFO] }
+        notes: { type: string }

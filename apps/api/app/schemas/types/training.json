@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TrainingCertificateSchema",
+  "type": "object",
+  "required": [
+    "holder_name",
+    "provider_name",
+    "certificate_number",
+    "course_title",
+    "completion_date"
+  ],
+  "properties": {
+    "holder_name": {
+      "type": "string",
+      "description": "Full name of participant"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Organization or institute issuing training credential"
+    },
+    "certificate_number": {
+      "type": "string",
+      "description": "Credential ID or certificate code"
+    },
+    "course_title": {
+      "type": "string",
+      "description": "Title of course or professional training"
+    },
+    "duration_hours": {
+      "type": "integer",
+      "description": "Course duration in hours"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date of training in YYYY-MM-DD format"
+    },
+    "completion_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of completion in YYYY-MM-DD format"
+    },
+    "grade_or_score": {
+      "type": "string",
+      "description": "Final score or completion grade"
+    }
+  }
+}

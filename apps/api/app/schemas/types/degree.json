@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DegreeCertificateSchema",
+  "type": "object",
+  "required": [
+    "holder_name",
+    "institution",
+    "certificate_number",
+    "degree_name",
+    "branch",
+    "issue_date"
+  ],
+  "properties": {
+    "holder_name": {
+      "type": "string",
+      "description": "Full legal name of the degree recipient"
+    },
+    "institution": {
+      "type": "string",
+      "description": "Name of the degree granting university or college"
+    },
+    "certificate_number": {
+      "type": "string",
+      "description": "Unique degree certificate / roll / registration number"
+    },
+    "degree_name": {
+      "type": "string",
+      "description": "Degree title (e.g., Bachelor of Technology, Master of Science)"
+    },
+    "branch": {
+      "type": "string",
+      "description": "Field of specialization or department (e.g., Computer Science and Engineering)"
+    },
+    "class_or_cgpa": {
+      "type": "string",
+      "description": "Graduating division, class, or cumulative grade point average (e.g. First Class with Distinction, 8.95 CGPA)"
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Convocation or issue date in YYYY-MM-DD format"
+    },
+    "admission_year": {
+      "type": "string",
+      "description": "Year of admission into the program"
+    }
+  }
+}

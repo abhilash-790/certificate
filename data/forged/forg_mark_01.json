@@ -1,0 +1,14 @@
+{
+  "id": "forg_mark_01",
+  "type": "marksheet",
+  "category": "forged",
+  "tamper_type": "arithmetic_mismatch",
+  "holder_name": "Vikram Malhotra",
+  "institution": "University of Delhi",
+  "certificate_number": "DU-2025-MS-402",
+  "total_printed": 490,
+  "subject_marks_sum": 420,
+  "is_tampered": true,
+  "expected_verdict": "NEEDS_REVIEW",
+  "expected_risk": 85.0
+}

@@ -1,0 +1,14 @@
+{
+  "name": "certiguard-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd apps/web && npm run dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:api": "cd apps/api && .\\venv\\Scripts\\python -m uvicorn app.main:app --reload --port 8000",
+    "build": "cd apps/web && npm run build",
+    "start": "cd apps/web && npm start",
+    "test": "cd apps/api && .\\venv\\Scripts\\python -m pytest tests -v",
+    "test:api": "cd apps/api && .\\venv\\Scripts\\python -m pytest tests -v"
+  }
+}

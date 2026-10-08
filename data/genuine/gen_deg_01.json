@@ -1,0 +1,12 @@
+{
+  "id": "gen_deg_01",
+  "type": "degree",
+  "category": "genuine",
+  "holder_name": "Rajesh Kumar Sharma",
+  "institution": "Indian Institute of Technology Bombay",
+  "certificate_number": "IITB-2025-CS-99",
+  "degree_name": "Bachelor of Technology",
+  "branch": "Computer Science and Engineering",
+  "issue_date": "2025-05-20",
+  "is_tampered": false
+}

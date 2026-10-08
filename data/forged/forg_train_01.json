@@ -1,0 +1,12 @@
+{
+  "id": "forg_train_01",
+  "type": "training",
+  "category": "forged",
+  "tamper_type": "diploma_mill_provider",
+  "holder_name": "Amit Kumar",
+  "provider_name": "Instant Degree Mill Online",
+  "certificate_number": "MILL-9912",
+  "is_tampered": true,
+  "expected_verdict": "NEEDS_REVIEW",
+  "expected_risk": 100.0
+}
